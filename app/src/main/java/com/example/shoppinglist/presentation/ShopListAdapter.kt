@@ -1,30 +1,20 @@
 package com.example.shoppinglist.presentation
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 
-class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>() {
+class ShopListAdapter : ListAdapter<ShopItem, ShopItemViewHolder>(ShopItemDiffCalback()) {
 
 
-    var shopList = listOf<ShopItem>()
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
-
-
-    var onShopItemClickListener : ((ShopItem)-> Unit)? = null
-    var onShopItemLongClickListener: ((ShopItem)-> Unit)? = null
+    var onShopItemClickListener: ((ShopItem) -> Unit)? = null
+    var onShopItemLongClickListener: ((ShopItem) -> Unit)? = null
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShopItemViewHolder {
-        val layout = when(viewType){
+        val layout = when (viewType) {
             VIEW_TYPE_ENABLED -> R.layout.item_shop_enabled
             VIEW_TYPE_DISABLED -> R.layout.item_shop_disabled
             else -> throw RuntimeException("unknown view type $viewType")
@@ -36,43 +26,33 @@ class ShopListAdapter : RecyclerView.Adapter<ShopListAdapter.ShopItemViewHolder>
     }
 
     override fun onBindViewHolder(holder: ShopItemViewHolder, position: Int) {
-        val shopItem = shopList[position]
+        val shopItem = getItem(position)
         holder.tvName.text = shopItem.name
         holder.tvCoun.text = shopItem.count.toString()
         holder.view.setOnLongClickListener {
             onShopItemLongClickListener?.invoke(shopItem)
             true
         }
-        holder.view.setOnClickListener{
+        holder.view.setOnClickListener {
             onShopItemClickListener?.invoke(shopItem)
         }
     }
 
-    override fun getItemCount(): Int {
-        return shopList.size
-    }
 
     override fun getItemViewType(position: Int): Int {
-        val item = shopList[position]
-        return if(item.enabled) {
+        val item = getItem(position)
+        return if (item.enabled) {
             VIEW_TYPE_ENABLED
-        } else{
+        } else {
             VIEW_TYPE_DISABLED
         }
     }
 
 
-    class ShopItemViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val tvName = view.findViewById<TextView>(R.id.tv_name)
-        val tvCoun = view.findViewById<TextView>(R.id.tv_count)
+    companion object {
+        const val MAX_POOL_SIZE = 15
+        const val VIEW_TYPE_ENABLED = 1
+        const val VIEW_TYPE_DISABLED = 0
     }
-
-
-
-companion object{
-    const val MAX_POOL_SIZE = 15
-    const val VIEW_TYPE_ENABLED = 1
-    const val VIEW_TYPE_DISABLED = 0
-}
 
 }
